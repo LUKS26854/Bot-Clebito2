@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Oráculo de Elden Ring - Assistente Tarnished</title>
+    <style>
+      /* --- Estilos Gerais (Reset e Fonte) --- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Times New Roman', serif; /* Estilo medieval/fantasia */
+      }
+
+      /* Paleta de Cores Elden Ring: Ouro, Bronze, Escuro */
+      :root {
+        --color-gold: #c39a3f;
+        --color-dark-gold: #a07830;
+        --color-metal: #5c5c5c;
+        --color-dark-bg: #1f1f1f;
+        --color-text-light: #f0e68c; /* Amarelo claro/Off-white */
+        --color-text-dark: #222222;
+        --color-error: #8b0000;
+        --color-warning: #7b68ee;
+      }
+
+      body {
+        background: url('https://upload.wikimedia.org/wikipedia/en/9/91/Elden_Ring_cover_art.jpg') no-repeat center center fixed; /* Imagem de fundo opcional (substitua ou remova) */
+        background-color: var(--color-dark-bg);
+        background-size: cover;
+        color: var(--color-text-light);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 900px;
+        background-color: rgba(31, 31, 31, 0.95); /* Fundo semi-transparente escuro */
+        border: 2px solid var(--color-dark-gold);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 85vh;
+      }
+
+      /* --- HEADER (Cabeçalho) --- */
+      .header {
+        background: linear-gradient(to right, var(--color-dark-gold), var(--color-gold));
+        color: var(--color-text-dark);
+        padding: 20px;
+        text-align: center;
+        position: relative;
+        border-bottom: 3px solid var(--color-metal);
+      }
+
+      .header h1 {
+        font-size: 2.2rem;
+        margin-bottom: 5px;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      .header p {
+        font-size: 1rem;
+        font-style: italic;
+        opacity: 0.9;
+      }
+
+      .elden-ring-logo {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 2.5rem;
+        color: var(--color-gold);
+      }
+
+      .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      /* --- API KEY SECTION (Seção de Chave API) --- */
+      .api-key-section {
+        padding: 20px;
+        background-color: var(--color-dark-bg);
+        border-bottom: 1px solid var(--color-metal);
+      }
+
+      .api-key-form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .api-key-input {
+        flex: 1;
+        min-width: 200px;
+        padding: 12px 15px;
+        border: 1px solid var(--color-metal);
+        border-radius: 8px;
+        font-size: 1rem;
+        background-color: #333;
+        color: var(--color-text-light);
+        transition: all 0.3s;
+      }
+
+      .api-key-input:focus {
+        outline: none;
+        border-color: var(--color-gold);
+        box-shadow: 0 0 0 3px rgba(195, 154, 63, 0.5);
+      }
+
+      .api-selector {
+        width: 100%;
+        margin-bottom: 10px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        color: var(--color-text-light);
+      }
+
+      .api-selector select {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--color-metal);
+        background-color: #333;
+        color: var(--color-text-light);
+        appearance: none; /* Remove estilo padrão do select */
+      }
+
+      .btn {
+        padding: 12px 20px;
+        background: linear-gradient(to right, var(--color-dark-gold), var(--color-gold));
+        color: var(--color-text-dark);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+      }
+
+      .btn:hover {
+        background: linear-gradient(to right, var(--color-gold), #ffd700);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(195, 154, 63, 0.3);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      /* --- CHAT BOX (Área de Mensagens) --- */
+      .chat-box {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        background-color: #2a2a2a; /* Fundo do chat */
+      }
+
+      .chat-box::-webkit-scrollbar {
+        width: 8px;
+      }
+      .chat-box::-webkit-scrollbar-thumb {
+        background: var(--color-dark-gold);
+        border-radius: 4px;
+      }
+
+      .message {
+        max-width: 80%;
+        padding: 12px 18px;
+        border-radius: 18px;
+        line-height: 1.5;
+        position: relative;
+        animation: fadeIn 0.3s ease-out;
+        color: var(--color-text-light);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .user-message {
+        align-self: flex-end;
+        background: var(--color-metal);
+        color: white;
+        border-bottom-right-radius: 5px;
+      }
+
+      .bot-message {
+        align-self: flex-start;
+        background-color: var(--color-gold);
+        color: var(--color-text-dark);
+        border: 1px solid var(--color-dark-gold);
+        border-bottom-left-radius: 5px;
+      }
+
+      .warning-message {
+        align-self: center;
+        background-color: #ffcc0044;
+        color: var(--color-warning);
+        border: 1px solid var(--color-warning);
+        border-radius: 8px;
+        max-width: 90%;
+        text-align: center;
+        font-size: 0.9rem;
+      }
+
+      .error-message {
+        align-self: center;
+        background-color: #8b000044;
+        color: var(--color-error);
+        border: 1px solid var(--color-error);
+        border-radius: 8px;
+        max-width: 90%;
+        text-align: center;
+        font-size: 0.9rem;
+      }
+
+      /* --- INPUT SECTION (Entrada de Mensagem) --- */
+      .input-section {
+        padding: 20px;
+        background-color: var(--color-dark-bg);
+        border-top: 1px solid #444;
+        display: flex;
+        gap: 10px;
+      }
+
+      .message-input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid var(--color-metal);
+        border-radius: 25px;
+        font-size: 1rem;
+        background-color: #333;
+        color: var(--color-text-light);
+        transition: all 0.3s;
+      }
+
+      .message-input:focus {
+        outline: none;
+        border-color: var(--color-gold);
+        box-shadow: 0 0 0 3px rgba(195, 154, 63, 0.4);
+      }
+
+      .send-btn {
+        padding: 12px 20px;
+        background: linear-gradient(to right, var(--color-dark-gold), var(--color-gold));
+        color: var(--color-text-dark);
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .send-btn:hover {
+        background: linear-gradient(to right, var(--color-gold), #ffd700);
+        transform: translateY(-2px);
+      }
+
+      .send-btn:active {
+        transform: translateY(0);
+      }
+
+      .send-btn:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* --- INDICADOR DE DIGITAÇÃO --- */
+      .typing-indicator {
+        display: inline-block;
+        padding: 12px 18px;
+        background-color: var(--color-metal);
+        border: 1px solid #444;
+        border-radius: 18px;
+        border-bottom-left-radius: 5px;
+        align-self: flex-start;
+        color: white;
+      }
+
+      .typing-dots {
+        display: flex;
+        gap: 4px;
+      }
+
+      .typing-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--color-gold);
+        animation: typing 1.4s infinite ease-in-out;
+      }
+
+      .typing-dot:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+      .typing-dot:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+
+      @keyframes typing {
+        0%,
+        80%,
+        100% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* --- INFORMAÇÕES EXTRAS --- */
+      .info-section {
+        padding: 15px 20px;
+        background-color: #333;
+        border-top: 1px solid #444;
+        font-size: 0.85rem;
+        color: var(--color-text-light);
+        text-align: center;
+      }
+
+      .info-section a {
+        color: var(--color-gold);
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .code-block {
+        background-color: #333;
+        border: 1px solid #444;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        font-family: "Courier New", monospace;
+        font-size: 0.9rem;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        color: #0fd651; /* Verde neon para código */
+      }
+
+      .api-info {
+        margin-top: 10px;
+        font-size: 0.8rem;
+        color: #a0a0a0;
+      }
+
+      /* --- MEDIA QUERIES --- */
+      @media (max-width: 768px) {
+        .container {
+          height: 95vh;
+        }
+        .message {
+          max-width: 90%;
+        }
+        .header h1 {
+          font-size: 1.5rem;
+        }
+        .elden-ring-logo {
+          font-size: 1.5rem;
+          top: 18px;
+        }
+        .api-key-form {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Oráculo da Térvore - Assistente Tarnished</h1>
+        <p>Busque sabedoria sobre chefes, itens e segredos de Elden Ring.</p>
+        <div class="elden-ring-logo">🛡️</div>
+      </div>
+
+      <div class="chat-container">
+        <div class="api-key-section">
+          <div class="api-selector">
+            <label for="apiProvider">Selecione o Guia:</label>
+            <select id="apiProvider">
+              <option value="gemini">
+                Google Gemini (Recomendado - Gratuito)
+              </option>
+              <option value="deepseek">
+                DeepSeek (Pode Requerer Pagamento)
+              </option>
+            </select>
+          </div>
+          <div class="api-key-form">
+            <input
+              type="password"
+              class="api-key-input"
+              placeholder="Digite sua chave da API..."
+              id="apiKey"
+            />
+            <button class="btn" id="saveApiKey">Salvar Chave</button>
+          </div>
+          <div class="api-info" id="apiInfo">
+            Para Google Gemini: Obtenha uma chave gratuita em
+            <a href="https://aistudio.google.com/app/apikey" target="_blank"
+              >Google AI Studio</a
+            >
+          </div>
+        </div>
+
+        <div class="chat-box" id="chatBox">
+          <div class="message bot-message">
+            Bem-vindo, **Tarnished**! Sou o Oráculo da Térvore. Por favor, selecione seu Guia (API) e
+            insira a chave rúnica (chave da API) para começarmos. Recomendo usar o Google Gemini, que
+            oferece um plano gratuito generoso. Posso ajudar com dúvidas sobre
+            chefes, armas, feitiços, locais e todo o *Lore* das Entre Terras!
+          </div>
+        </div>
+
+        <div class="input-section">
+          <input
+            type="text"
+            class="message-input"
+            placeholder="Digite sua pergunta sobre Elden Ring..."
+            id="messageInput"
+            disabled
+          />
+          <button class="send-btn" id="sendMessage" disabled>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M22 2L11 13"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M22 2L15 22L11 13L2 9L22 2Z"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="info-section">
+          <strong>Google Gemini:</strong> Obtenha uma chave gratuita em
+          <a href="https://aistudio.google.com/app/apikey" target="_blank"
+            >Google AI Studio</a
+          >
+          | <strong>DeepSeek:</strong>
+          <a href="https://platform.deepseek.com/api_keys" target="_blank"
+            >DeepSeek Platform</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const apiProviderSelect = document.getElementById("apiProvider");
+        const apiKeyInput = document.getElementById("apiKey");
+        const apiInfo = document.getElementById("apiInfo");
+        const saveApiKeyBtn = document.getElementById("saveApiKey");
+        const messageInput = document.getElementById("messageInput");
+        const sendMessageBtn = document.getElementById("sendMessage");
+        const chatBox = document.getElementById("chatBox");
+
+        let apiKey = "";
+        let apiProvider = "gemini";
+        let isProcessing = false;
+
+        // --- PALAVRAS-CHAVE TEMA ELDEN RING ---
+        const eldenRingKeywords = [
+          "Maculado", "Bênção de Fia", "Mesa Redonda", "Leyndell", "Caelid", "Arquivo de Alberich", "Magia Cintilante", "Estudo de Miriel", "Graça da Térvore", "Bolsa de Talismãs", "Grandes Runas", "Lembrança de Godrick", "Lista de Chefes", "Fragmento de História", "Nível de Vigor", "Barra de Vigor", "É Portador de Fragmento", "Cinzas Espirituais", "Cinzas de Guerra", "Classe de Jogador", "Sintonia de Feitiço", "Viajar para a Graça", "Ponto de Decisão", "Rota Segura/Alternativa", "Exploração de Masmorra", "Guardando um Portão", "Tentativa de Aparo", "Frasco de Estus", "Renascer na Graça", "Lei da Ordem Dourada", "Encantamento/Feitiço", "Espaço de Equipamento", "Mapa da Área", "Ensinamentos da Vontade Maior", "A Fragmentação", "Escrita Rúnica", "Nota de um NPC", "Gritando 'Louvado Seja o Sol'", "Reivindicando a Recompensa", "Passo Rápido", "Arma Encantada", "Colheita de Runas", "Seguindo a Trilha da Graça", "Farmando Runas", "Escolha de Bênção", "Genealogia Semideus", "Linhagem de Marika", "Comunhão Draconiana", "Assassino da Faca Negra", "A História dos Deuses Exteriores", "Relatório de Exploração", "Invocação de Espírito", "Estudando as Estrelas", "A Diretiva da Vontade Maior", "Dois Dedos", "Três Dedos", "A Grande Ponte", "Pergaminho de Encantamento", "Prece Antiga do Dragão", "Lista de Itens Derrubados", "Profundezas da Raiz Profunda", "Ritual da Ordem Dourada", "Chama Frenética", "A Biblioteca Real", "Livro-Razão do Mercador Viajante", "Entre Terras", "Local de Graça", "Poço do Rio Ainsel", "Notas Albinaúricas", "Torre de Ranni", "A Forja dos Gigantes", "O Caminho Oculto", "Dissecação do Feitiço", "Julgamento por Combate", "Duelo até a Morte", "Desafio do Lorde Prístino", "Planta de Marika", "Runa de Reparação", "A Cidade Eterna",
+        ];
+        // --- FIM DAS PALAVRAS-CHAVE ---
+
+
+        // Atualizar informações da API quando o provedor mudar
+        apiProviderSelect.addEventListener("change", function () {
+          apiProvider = this.value;
+          updateApiInfo();
+        });
+
+        function updateApiInfo() {
+          if (apiProvider === "gemini") {
+            apiInfo.innerHTML =
+              'Para Google Gemini: Obtenha uma chave gratuita em <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>';
+            apiKeyInput.placeholder = "Digite sua chave do Google Gemini...";
+          } else {
+            apiInfo.innerHTML =
+              'Para DeepSeek: Obtenha uma chave em <a href="https://platform.deepseek.com/api_keys" target="_blank">DeepSeek Platform</a> (pode requerer pagamento)';
+            apiKeyInput.placeholder = "Digite sua chave do DeepSeek...";
+          }
+        }
+
+        // Inicializar informações da API
+        updateApiInfo();
+
+        // Salvar a chave da API
+        saveApiKeyBtn.addEventListener("click", function () {
+          apiKey = apiKeyInput.value.trim();
+
+          if (!apiKey) {
+            addMessage("Por favor, digite uma Chave Rúnica válida.", "warning");
+            return;
+          }
+
+          // Esconder a chave na interface
+          apiKeyInput.type = "password";
+          apiKeyInput.value = "••••••••••••••••";
+          apiKeyInput.disabled = true;
+          saveApiKeyBtn.disabled = true;
+          apiProviderSelect.disabled = true;
+
+          // Ativar campos de mensagem
+          messageInput.disabled = false;
+          sendMessageBtn.disabled = false;
+
+          addMessage(
+            `Chave Rúnica (${
+              apiProvider === "gemini" ? "Google Gemini" : "DeepSeek"
+            }) salva com sucesso! Agora você pode fazer suas perguntas sobre Elden Ring.`,
+            "bot"
+          );
+          messageInput.focus();
+        });
+
+        // Enviar mensagem ao clicar no botão
+        sendMessageBtn.addEventListener("click", sendMessage);
+
+        // Enviar mensagem ao pressionar Enter
+        messageInput.addEventListener("keypress", function (e) {
+          if (e.key === "Enter" && !isProcessing) {
+            sendMessage();
+          }
+        });
+
+        async function sendMessage() {
+          const message = messageInput.value.trim();
+
+          if (!message || isProcessing) return;
+
+          // Verificar se a pergunta é sobre Elden Ring
+          if (!isEldenRingRelated(message)) {
+            addMessage(
+              "Por favor, faça apenas perguntas relacionadas a Elden Ring. Este Oráculo é especializado em sabedoria das Entre Terras.",
+              "warning"
+            );
+            messageInput.value = "";
+            return;
+          }
+
+          // Adicionar mensagem do usuário ao chat
+          addMessage(message, "user");
+          messageInput.value = "";
+
+          // Mostrar indicador de digitação
+          showTypingIndicator();
+
+          // Processar a pergunta
+          await processQuestion(message);
+        }
+
+        async function processQuestion(question) {
+          isProcessing = true;
+          sendMessageBtn.disabled = true;
+
+          try {
+            let response;
+
+            if (apiProvider === "gemini") {
+              response = await callGeminiAPI(question);
+            } else {
+              response = await callDeepSeekAPI(question);
+            }
+
+            // Remover indicador de digitação
+            removeTypingIndicator();
+
+            // Exibir a resposta
+            addMessage(response, "bot");
+          } catch (error) {
+            console.error("Erro ao processar a pergunta:", error);
+            removeTypingIndicator();
+
+            let errorMessage =
+              "Desculpe, ocorreu um erro ao consultar o Oráculo. ";
+
+            if (error.message.includes("402")) {
+              errorMessage +=
+                "O Guia selecionado requer sacrifícios (pagamento). Por favor, use o Google Gemini que tem um plano gratuito.";
+            } else if (error.message.includes("401")) {
+              errorMessage +=
+                "Chave Rúnica inválida ou não autorizada. Verifique sua chave e tente novamente.";
+            } else if (error.message.includes("429")) {
+              errorMessage +=
+                "Limite de requisições (Fúria) excedido. Tente novamente mais tarde.";
+            } else if (error.message.includes("500")) {
+              errorMessage +=
+                "Erro interno do servidor. O Erdtree falhou. Tente novamente em alguns instantes.";
+            } else {
+              errorMessage += `Detalhes: ${error.message}`;
+            }
+
+            addMessage(errorMessage, "error");
+          } finally {
+            isProcessing = false;
+            sendMessageBtn.disabled = false;
+            messageInput.focus();
+          }
+        }
+
+        async function callGeminiAPI(question) {
+          // Usando a API do Google Gemini
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    {
+                      text: `Você é um Oráculo, um assistente especializado em Elden Ring. Responda apenas perguntas relacionadas a Elden Ring, incluindo chefes, armas, feitiços, armaduras, encantamentos, locais, itens e lore. Sua personalidade deve ser sábia e ligeiramente mística. Se a pergunta não for sobre Elden Ring, explique educadamente que você só pode ajudar com a sabedoria das Entre Terras.
+
+Pergunta do Tarnished: ${question}`,
+                    },
+                  ],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 1000,
+              },
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              `Erro na API: ${response.status} - ${response.statusText}`
+            );
+          }
+
+          const data = await response.json();
+
+          if (data.candidates && data.candidates.length > 0) {
+            return data.candidates[0].content.parts[0].text;
+          } else {
+            throw new Error("Resposta da API não contém dados válidos");
+          }
+        }
+
+        async function callDeepSeekAPI(question) {
+          // Tentativa com a API DeepSeek (mantida, mas com prompt Elden Ring)
+          const response = await fetch(
+            "https://api.deepseek.com/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: [
+                  {
+                    role: "system",
+                    content:
+                      "Você é um Oráculo, um assistente especializado em Elden Ring. Responda apenas perguntas relacionadas a Elden Ring, incluindo chefes, armas, feitiços, armaduras, encantamentos, locais, itens e lore. Sua personalidade deve ser sábia e ligeiramente mística. Se a pergunta não for sobre Elden Ring, explique educadamente que você só pode ajudar com a sabedoria das Entre Terras.",
+                  },
+                  {
+                    role: "user",
+                    content: question,
+                  },
+                ],
+                max_tokens: 1000,
+                temperature: 0.7,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              `Erro na API: ${response.status} - ${response.statusText}`
+            );
+          }
+
+          const data = await response.json();
+
+          if (data.choices && data.choices.length > 0) {
+            return data.choices[0].message.content;
+          } else {
+            throw new Error("Resposta da API não contém dados válidos");
+          }
+        }
+
+        function isEldenRingRelated(message) {
+          const lowerMessage = message.toLowerCase();
+
+          // 1. Checa as palavras-chave fornecidas (Maculado, Leyndell, etc.)
+          const hasSpecificKeyword = eldenRingKeywords.some((keyword) =>
+            lowerMessage.includes(keyword.toLowerCase())
+          );
+          
+          if (hasSpecificKeyword) return true;
+
+          // 2. Checa termos genéricos de Elden Ring, caso a lista específica não cubra tudo.
+          const genericKeywords = ["elden ring", "tarnished", "great rune", "site of grace", "malenia", "radagon", "marika", "ranni", "godrick", "boss", "armadura", "arma", "feitiço", "encantamento", "talismã", "build"];
+          
+          return genericKeywords.some((keyword) =>
+            lowerMessage.includes(keyword)
+          );
+        }
+
+        function addMessage(text, sender) {
+          const messageDiv = document.createElement("div");
+          messageDiv.classList.add("message");
+
+          if (sender === "user") {
+            messageDiv.classList.add("user-message");
+            messageDiv.textContent = text;
+          } else if (sender === "bot") {
+            messageDiv.classList.add("bot-message");
+
+            // Processar a resposta para formatar blocos de código
+            const formattedText = formatCodeBlocks(text);
+            messageDiv.innerHTML = formattedText;
+          } else if (sender === "warning") {
+            messageDiv.classList.add("warning-message");
+            messageDiv.textContent = text;
+          } else if (sender === "error") {
+            messageDiv.classList.add("error-message");
+            messageDiv.textContent = text;
+          }
+
+          chatBox.appendChild(messageDiv);
+
+          // Rolagem automática para a última mensagem
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function formatCodeBlocks(text) {
+          // Substituir blocos de código marcados com ``` por elementos pre/code
+          return text.replace(
+            /```(\w+)?\n([\s\S]*?)```/g,
+            function (match, language, code) {
+              return `<div class="code-block"><pre><code>${code.trim()}</code></pre></div>`;
+            }
+          );
+        }
+
+        function showTypingIndicator() {
+          const typingDiv = document.createElement("div");
+          typingDiv.classList.add("typing-indicator");
+          typingDiv.id = "typingIndicator";
+
+          const dotsDiv = document.createElement("div");
+          dotsDiv.classList.add("typing-dots");
+
+          for (let i = 0; i < 3; i++) {
+            const dot = document.createElement("div");
+            dot.classList.add("typing-dot");
+            dotsDiv.appendChild(dot);
+          }
+
+          typingDiv.appendChild(dotsDiv);
+          chatBox.appendChild(typingDiv);
+
+          // Rolagem automática para o indicador de digitação
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+          const typingIndicator = document.getElementById("typingIndicator");
+          if (typingIndicator) {
+            typingIndicator.remove();
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
